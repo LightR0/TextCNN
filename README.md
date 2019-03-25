@@ -7,3 +7,10 @@
 ## Text Classification with CNN
 使用基于tensorflow的卷积神经网络进行中文文本分类  
 本文主要借鉴和学习此项目：https://github.com/gaussic/text-classification-cnn-rnn  
+### 环境
+- python (2.7.13)  
+- tensorflow (1.10.0)
+- numpy (1.16.2)  
+- scikit-learn (0.19.0)  
+- scipy (0.19.1)  
+由于python2对中文支持不友好，所以代码中需要对数据进行编码与转码处理。
