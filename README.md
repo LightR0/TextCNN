@@ -10,11 +10,15 @@
 本项目借鉴：https://github.com/gaussic/text-classification-cnn-rnn  
 
 ### 环境
-- python (2.7.13)  
-- tensorflow (1.10.0)
-- numpy (1.16.2)  
-- scikit-learn (0.19.0)  
-- scipy (0.19.1)  
+
+| 模块 | 版本 |
+| :----------: | :----------: |
+| python | 2.7.13 |
+| tensorflow | 1.10.0 |
+| numpy | 1.16.2 |
+| scikit-learn | 0.19.0 |
+| scipy | 0.19.1 |
+
 ## 数据集
 使用THUCNews的一个子集进行训练与测试，数据集请自行到[THUCTC：一个高效的中文文本分类工具包](http://thuctc.thunlp.org/)下载，请遵循数据提供方的开源协议。  
 本项目使用THUCNews数据集所有类别共计14个，每个类别10000条数据。  
