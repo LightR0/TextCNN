@@ -40,6 +40,7 @@
 | cnews.train.txt | 训练集 | 112000 |
 | cnews.val.txt | 验证集 | 14000 |
 | cnews.test.txt | 测试集 | 14000 |
+
 这三个文件可以在此下载，链接：[http://thuctc.thunlp.org/](http://thuctc.thunlp.org/)，密码：  
 
 
