@@ -15,6 +15,7 @@ datanum = 10000
 rawdir = "THUCNews"
 newdir = "data/thucnews/"
 
+
 def copy_datas(raw_dir, new_dir, data_num):
 	for category in os.listdir(raw_dir):
 		print category
