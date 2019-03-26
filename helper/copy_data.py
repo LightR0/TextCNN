@@ -21,6 +21,7 @@ def copy_datas(raw_dir, new_dir, data_num):
 		raw_cat_dir = os.path.join(raw_dir, category)
 		new_cat_dir = os.path.join(new_dir, category)
 		files = os.listdir(raw_cat_dir)
+        
 		# 采样文件索引
 		random_list = [random.randint(0, len(files)-1) for _ in range(data_num)]
 		for text_index in random_list:
