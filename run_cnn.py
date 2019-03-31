@@ -22,15 +22,24 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 gpu_config = tf.ConfigProto()  
 gpu_config.gpu_options.allow_growth = True 
 
+# char data config
 base_dir = 'data/cnews'
 train_dir = os.path.join(base_dir, 'cnews.train.txt')
 test_dir = os.path.join(base_dir, 'cnews.test.txt')
 val_dir = os.path.join(base_dir, 'cnews.val.txt')
 vocab_dir = os.path.join(base_dir, 'cnews.vocab.txt')
 
+# word data config
+train_dir_word = os.path.join(base_dir, 'cnews.train.seg.txt')
+test_dir_word = os.path.join(base_dir, 'cnews.test.seg.txt')
+val_dir_word = os.path.join(base_dir, 'cnews.val.seg.txt')
+vocab_dir_word = os.path.join(base_dir, 'cnews.vocab.seg.txt')
+
+
 save_dir = 'checkpoints/textcnn'
 save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
 
+embedding_type = sys.argv[2]
 
 def get_time_dif(start_time):
     """获取已使用时间"""
@@ -84,8 +93,12 @@ def train():
     print("Loading training and validation data...")
     # 载入训练集与验证集
     start_time = time.time()
-    x_train, y_train = process_file(train_dir, word_to_id, cat_to_id, config.seq_length)
-    x_val, y_val = process_file(val_dir, word_to_id, cat_to_id, config.seq_length)
+    if embedding_type=='char':
+        x_train, y_train = process_file(train_dir, word_to_id, cat_to_id, embedding_type, config.seq_length)
+        x_val, y_val = process_file(val_dir, word_to_id, cat_to_id, embedding_type, config.seq_length)
+    else:
+        x_train, y_train = process_file(train_dir_word, word_to_id, cat_to_id, embedding_type, config.seq_length)
+        x_val, y_val = process_file(val_dir_word, word_to_id, cat_to_id, embedding_type, config.seq_length)
     time_dif = get_time_dif(start_time)
     print("Time usage:", time_dif)
 
@@ -148,8 +161,10 @@ def train():
 def test():
     print("Loading test data...")
     start_time = time.time()
-    x_test, y_test = process_file(test_dir, word_to_id, cat_to_id, config.seq_length)
-
+    if embedding_type=='char':
+        x_test, y_test = process_file(test_dir, word_to_id, cat_to_id, embedding_type, config.seq_length)
+    else:
+        x_test, y_test = process_file(test_dir_word, word_to_id, cat_to_id, embedding_type, config.seq_length)
     session = tf.Session()
     session.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
@@ -189,19 +204,33 @@ def test():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2 or sys.argv[1] not in ['train', 'test']:
-        raise ValueError("""usage: python run_cnn.py [train / test]""")
+    if len(sys.argv) != 3 or sys.argv[1] not in ['train', 'test'] or sys.argv[2] not in ['char', 'word']:
+        raise ValueError("""usage: python run_cnn.py [train / test] [char / word]""")
 
     print('Configuring CNN model...')
-    config = TCNNConfig()
-    if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
-        build_vocab(train_dir, vocab_dir, config.vocab_size)
-    categories, cat_to_id = read_category()
-    words, word_to_id = read_vocab(vocab_dir)
-    config.vocab_size = len(words)
-    model = TextCNN(config)
 
-    if sys.argv[1] == 'train':
-        train()
+    if sys.argv[2] == 'char':
+        config = TCNNConfig()
+        if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
+            build_vocab(train_dir, vocab_dir, embedding_type, config.vocab_size)
+        categories, cat_to_id = read_category()
+        words, word_to_id = read_vocab(vocab_dir)
+        config.vocab_size = len(words)
+        model = TextCNN(config)
+
+        if sys.argv[1] == 'train':
+            train()
+        else:
+            test()
     else:
-        test()
+        config = TCNNConfig()
+        config.seq_length = 300
+        categories, cat_to_id = read_category()
+        words, word_to_id = read_vocab(vocab_dir_word)
+        config.vocab_size = len(words)
+        model = TextCNN(config)
+
+        if sys.argv[1] == 'train':
+            train()
+        else:
+            test()
