@@ -43,7 +43,7 @@ def open_file(filename, mode='r'):
         return open(filename, mode)
 
 
-def read_file(filename):
+def read_file(filename, embedding_type):
     """读取文件数据"""
     contents, labels = [], []
     with open_file(filename) as f:
@@ -51,16 +51,21 @@ def read_file(filename):
             try:
                 label, content = line.strip().split('\t')
                 if content:
-                    contents.append(list(native_content(content)))
-                    labels.append(native_content(label))
+                    if embedding_type == 'char':
+                        contents.append(list(native_content(content)))
+                        labels.append(native_content(label))
+                    else:
+                        contents.append(native_content(content).split(','))
+                        labels.append(native_content(label))
+
             except:
                 pass
     return contents, labels
 
 
-def build_vocab(train_dir, vocab_dir, vocab_size=5000):
+def build_vocab(train_dir, vocab_dir, embedding_type, vocab_size=5000):
     """根据训练集构建词汇表，存储"""
-    data_train, _ = read_file(train_dir)
+    data_train, _ = read_file(train_dir, embedding_type)
 
     all_data = []
     for content in data_train:
@@ -100,9 +105,9 @@ def to_words(content, words):
     return ''.join(words[x] for x in content)
 
 
-def process_file(filename, word_to_id, cat_to_id, max_length=600):
+def process_file(filename, word_to_id, cat_to_id, embedding_type, max_length=600):
     """将文件转换为id表示"""
-    contents, labels = read_file(filename)
+    contents, labels = read_file(filename, embedding_type)
 
     data_id, label_id = [], []
     for i in range(len(contents)):
