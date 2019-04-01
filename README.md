@@ -1,8 +1,9 @@
 # 项目内容
-本项目主要针对文本分类场景，尝试目前流行的深度学习模型，通过不同的`embedding`方式，对比文本分类效果，实现文本分类的目的。
-主要embedding方式：  
+本项目主要针对文本分类场景，尝试目前流行的深度学习模型，通过不同的`embedding`方式，对比文本分类效果，实现文本分类的目的。  
+主要embedding：  
 - char 
 - word  
+
 主要模型：
 - Text Classification with CNN
 - Text Classification with RNN
