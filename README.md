@@ -89,11 +89,11 @@ class TCNNConfig(object):
     """CNN配置参数"""
 
     embedding_dim = 64      # 词向量维度
-    seq_length = 600        # 序列长度，此参数可变
+    seq_length = 600        # 序列长度,600(char),400(word)
     num_classes = 10        # 类别数
     num_filters = 128        # 卷积核数目
     kernel_size = 5         # 卷积核尺寸
-    vocab_size = 5000       # 词汇表达小
+    vocab_size = 5000       # 词汇表达小,5000(char),3000(word)
 
     hidden_dim = 128        # 全连接层神经元
 
@@ -240,3 +240,49 @@ Confusion Matrix...
 ```
 
 当使用字符级别embedding时，在测试集上的准确率达到了96.86%，且各类的precision, recall和f1-score都超过了0.9。从混淆矩阵也可以看出分类效果非常优秀。
+
+## RNN循环神经网络
+
+### 配置项
+
+RNN可配置的参数如下所示，在`rnn_model.py`中。
+
+```python
+class TRNNConfig(object):
+    """RNN配置参数"""
+
+    # 模型参数
+    embedding_dim = 64      # 词向量维度
+    seq_length = 600        # 序列长度,600(char),400(word)
+    num_classes = 10        # 类别数
+    vocab_size = 5000       # 词汇表达小,5000(char),3000(word)
+
+    num_layers= 2           # 隐藏层层数
+    hidden_dim = 128        # 隐藏层神经元
+    rnn = 'gru'             # lstm 或 gru
+
+    dropout_keep_prob = 0.8 # dropout保留比例
+    learning_rate = 1e-3    # 学习率
+
+    batch_size = 128         # 每批训练大小
+    num_epochs = 10          # 总迭代轮次
+
+    print_per_batch = 100    # 每多少轮输出一次结果
+    save_per_batch = 10      # 每多少轮存入tensorboard
+```
+
+### RNN模型
+
+具体参看`rnn_model.py`的实现。
+
+大致结构如下：
+
+![images/rnn_architecture](images/rnn_architecture.png)
+
+### 训练与验证
+
+> 这部分的代码与 run_cnn.py极为相似，只需要将模型和部分目录稍微修改。
+
+运行 `python run_rnn.py train`，可以开始训练。
+
+> 若之前进行过训练，请把tensorboard/textrnn删除，避免TensorBoard多次训练结果重叠。
