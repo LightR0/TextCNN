@@ -6,9 +6,11 @@
 - Text Classification with RNN
 
 ------
+# 引用
+本项目引用借鉴：https://github.com/gaussic/text-classification-cnn-rnn
+------
 # Text Classification with CNN
 使用基于tensorflow的卷积神经网络进行中文文本分类。  
-本项目引用借鉴：https://github.com/gaussic/text-classification-cnn-rnn
 
 ## 环境
 
