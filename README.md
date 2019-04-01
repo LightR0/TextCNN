@@ -1,5 +1,5 @@
 # 项目内容
-本项目主要针对文本分类场景，尝试目前流行的深度学习模型，实现文本分类的目的。  
+本项目主要针对文本分类场景，尝试目前流行的深度学习模型，通过不同的`embedding`方式，对比文本分类效果，实现文本分类的目的。  
 主要模型：
 - Text Classification with CNN
 - Text Classification with RNN
@@ -7,7 +7,7 @@
 ------
 # Text Classification with CNN
 使用基于tensorflow的卷积神经网络进行中文文本分类。  
-本项目引用借鉴：https://github.com/gaussic/text-classification-cnn-rnn  
+本项目引用借鉴：https://github.com/gaussic/text-classification-cnn-rnn
 
 ## 环境
 
@@ -35,13 +35,17 @@
 | 5000*10 | 500*10 | 1000*10 |
 
 从原始数据集生成子集的过程参考`helper`下的两个脚本。其中，`copy_data.py`用于从每个分类拷贝6500个文件，`cnews_group.py`用于将多个文件整合到一个文件中。执行`cnews_loader.py`文件后，得到三个数据文件。   
-链接: https://pan.baidu.com/s/1hugrfRu 密码: qfud
+链接: https://pan.baidu.com/s/1hugrfRu 密码: qfud 。下载或者生成`cnews.train.txt, cnews.val.txt, cnews.test.txt`三个文件之后，运行`data`下的`cnews_seg.py`脚本，用于生成训练集分词文件、验证集分词文件、测试集分词文件和以词为单位的词汇表文件。
+下载链接：https://pan.baidu.com/s/1KuzMatR8twNSQNVTSHiycQ 密码: p1io 。
 
 | 文件 | 类型 | 数目 |
-| :----------: | :----------: | :----------: |
+| :---------- | :---------- | :---------- |
 | cnews.train.txt | 训练集 | 50000 |
 | cnews.val.txt | 验证集 | 5000 |
 | cnews.test.txt | 测试集 | 10000 |
+| cnews.train.seg.txt | 训练集分词文件 | 50000 |
+| cnews.val.seg.txt | 验证集分词文件 | 5000 |
+| cnews.test.seg.txt | 测试集分词文件 | 10000 |
 
 ## 预处理
 
@@ -50,20 +54,29 @@
 | 函数        | 说明        |  
 | :---------- | :---------- |
 | read_file() | 读取文件数据 |
-| build_vocab() | 构建词汇表，使用字符级的表示，这一函数会将词汇表存储下来，避免每一次重复处理 |
+| build_vocab() | 构建词汇表，长度5000，使用字符级的表示，这一函数会将词汇表存储下来，避免每一次重复处理 |
 | read_vocab()  | 读取上一步存储的词汇表，转换为`{词：id}`表示 |
 | read_category() | 将分类目录固定，转换为`{类别: id}`表示 |
 | to_words() | 将一条由id表示的数据重新转换为文字 |
 | process_file() | 将数据集从文字转换为固定长度的id序列表示 |
 | batch_iter() | 为神经网络的训练准备经过shuffle的批次的数据 |
 
-经过数据预处理，数据的格式如下：
+`data/cnews_seg.py`为数据的分词文件。
+
+| 函数        | 说明        |  
+| :---------- | :---------- |
+| check_number() | 判断一个字符串是否为数字，用于筛掉一篇文档里的数字 |
+| load_stopwords() | 导入常见停用词，用于筛掉一篇文档里的停用词 |
+| read_file_seg()  | 读取文件并进行分词 |
+| build_vocab() | 利用训练集生成词汇表（使用词语级表示），长度3000 |
+
+经过数据预处理，数据的格式如下，其中`seq_length`为单篇文档的`embedding`序列长度，当使用`char`字符级别时`seq_length=600`，当使用`word`词语级别时`seq_length=400`：
 
 | Data | Shape | Data | Shape |
 | :---------- | :---------- | :---------- | :---------- |
-| x_train | [50000, 600] | y_train | [50000, 10] |
-| x_val | [5000, 600] | y_val | [5000, 10] |
-| x_test | [10000, 600] | y_test | [10000, 10] |
+| x_train | [50000, seq_length] | y_train | [50000, 10] |
+| x_val | [5000, seq_length] | y_val | [5000, 10] |
+| x_test | [10000, seq_length] | y_test | [10000, 10] |
 
 ## CNN卷积神经网络
 
@@ -76,7 +89,7 @@ class TCNNConfig(object):
     """CNN配置参数"""
 
     embedding_dim = 64      # 词向量维度
-    seq_length = 600        # 序列长度
+    seq_length = 600        # 序列长度，此参数可变
     num_classes = 10        # 类别数
     num_filters = 128        # 卷积核数目
     kernel_size = 5         # 卷积核尺寸
@@ -102,31 +115,13 @@ class TCNNConfig(object):
 
 ![images/cnn_architecture](images/cnn_architecture.png)
 
-### 训练与验证
+### 训练与验证-字符级
 
-运行 `python run_cnn.py train`，可以开始训练。
+运行 `python run_cnn.py train char `，可以开始训练。
 
 > 若之前进行过训练，请把tensorboard/textcnn删除，避免TensorBoard多次训练结果重叠。
 
 ```
-Epoch: 1
-Iter:      0, Train Loss:    2.3, Train Acc:  15.62%, Val Loss:    2.3, Val Acc:  10.16%, Time: 0:00:01 *
-Iter:    100, Train Loss:   0.63, Train Acc:  79.69%, Val Loss:    1.1, Val Acc:  71.00%, Time: 0:00:03 *
-Iter:    200, Train Loss:   0.48, Train Acc:  84.38%, Val Loss:   0.67, Val Acc:  80.10%, Time: 0:00:05 *
-Iter:    300, Train Loss:   0.32, Train Acc:  92.19%, Val Loss:   0.48, Val Acc:  84.72%, Time: 0:00:07 *
-Iter:    400, Train Loss:   0.12, Train Acc:  98.44%, Val Loss:   0.31, Val Acc:  91.60%, Time: 0:00:08 *
-Iter:    500, Train Loss:   0.18, Train Acc:  98.44%, Val Loss:   0.29, Val Acc:  91.42%, Time: 0:00:10 
-Iter:    600, Train Loss:   0.22, Train Acc:  95.31%, Val Loss:   0.29, Val Acc:  92.24%, Time: 0:00:12 *
-Iter:    700, Train Loss:   0.15, Train Acc:  93.75%, Val Loss:   0.24, Val Acc:  93.50%, Time: 0:00:13 *
-Epoch: 2
-Iter:    800, Train Loss:  0.078, Train Acc:  96.88%, Val Loss:   0.23, Val Acc:  93.82%, Time: 0:00:15 *
-Iter:    900, Train Loss:  0.088, Train Acc:  96.88%, Val Loss:   0.18, Val Acc:  95.00%, Time: 0:00:17 *
-Iter:   1000, Train Loss:  0.079, Train Acc:  98.44%, Val Loss:   0.27, Val Acc:  92.18%, Time: 0:00:18 
-Iter:   1100, Train Loss:   0.13, Train Acc:  96.88%, Val Loss:   0.23, Val Acc:  93.76%, Time: 0:00:20 
-Iter:   1200, Train Loss:    0.2, Train Acc:  93.75%, Val Loss:   0.18, Val Acc:  95.14%, Time: 0:00:22 *
-Iter:   1300, Train Loss:  0.074, Train Acc:  96.88%, Val Loss:   0.18, Val Acc:  95.58%, Time: 0:00:23 *
-Iter:   1400, Train Loss:  0.067, Train Acc:  96.88%, Val Loss:   0.19, Val Acc:  94.58%, Time: 0:00:25 
-Iter:   1500, Train Loss:   0.02, Train Acc: 100.00%, Val Loss:    0.2, Val Acc:  94.32%, Time: 0:00:27 
 Epoch: 3
 Iter:   1600, Train Loss:   0.03, Train Acc: 100.00%, Val Loss:   0.18, Val Acc:  95.18%, Time: 0:00:28 
 Iter:   1700, Train Loss:  0.099, Train Acc:  96.88%, Val Loss:   0.18, Val Acc:  95.02%, Time: 0:00:30 
@@ -139,16 +134,16 @@ Iter:   2300, Train Loss:  0.059, Train Acc:  98.44%, Val Loss:   0.18, Val Acc:
 No optimization for a long time, auto-stopping...
 ```
 
-在验证集上的最佳效果为95.36%，且只经过了3轮迭代就已经停止。
+当使用字符级别embedding时，在验证集上的最佳效果为95.36%，且只经过了3轮迭代就已经停止。
 
 准确率和误差如图所示：
 
-![images](images/acc_loss.png)
+![images](images/acc_loss_char.png)
 
 
-### 测试
+### 测试-字符级
 
-运行 `python run_cnn.py test` 在测试集上进行测试。
+运行 `python run_cnn.py test char ` 在测试集上进行测试。
 
 ```
 Test Loss:   0.12, Test Acc:  96.60%
@@ -183,6 +178,65 @@ Confusion Matrix...
 
 ```
 
-在测试集上的准确率达到了96.6%，且各类的precision, recall和f1-score都超过了0.9。
+当使用字符级别embedding时，在测试集上的准确率达到了96.6%，且各类的precision, recall和f1-score都超过了0.9。从混淆矩阵也可以看出分类效果非常优秀。
 
-从混淆矩阵也可以看出分类效果非常优秀。
+### 训练与验证-词语级
+
+运行 `python run_cnn.py train word `，可以开始训练。
+
+> 若之前进行过训练，请把tensorboard/textcnn删除，避免TensorBoard多次训练结果重叠。
+
+```
+Epoch: 3
+Iter:   1600, Train Loss:  0.059, Train Acc:  96.88%, Val Loss:    0.2, Val Acc:  94.26%, Time: 0:00:21 
+Iter:   1700, Train Loss:  0.026, Train Acc: 100.00%, Val Loss:   0.17, Val Acc:  95.42%, Time: 0:00:22 
+Iter:   1800, Train Loss:  0.056, Train Acc:  98.44%, Val Loss:   0.17, Val Acc:  95.34%, Time: 0:00:23 
+Iter:   1900, Train Loss:   0.13, Train Acc:  95.31%, Val Loss:   0.17, Val Acc:  95.32%, Time: 0:00:24 
+No optimization for a long time, auto-stopping...
+
+```
+
+当使用词语级别embedding时，在验证集上的最佳效果为95.32%，经过了3轮迭代就已经停止。
+
+准确率和误差如图所示：
+
+![images](images/acc_loss_word.png)
+
+
+### 测试-词语级
+
+运行 `python run_cnn.py test word ` 在测试集上进行测试。
+
+```
+Test Loss:   0.11, Test Acc:  96.86%
+Precision, Recall and F1-Score...
+             precision    recall  f1-score   support
+
+         体育       1.00      1.00      1.00      1000
+         财经       0.97      0.99      0.98      1000
+         房产       1.00      0.99      0.99      1000
+         家居       0.94      0.92      0.93      1000
+         教育       0.96      0.92      0.94      1000
+         科技       0.94      0.98      0.96      1000
+         时尚       0.96      0.97      0.97      1000
+         时政       0.95      0.96      0.95      1000
+         游戏       0.99      0.97      0.98      1000
+         娱乐       0.98      0.98      0.98      1000
+
+avg / total       0.97      0.97      0.97     10000
+
+Confusion Matrix...
+[[997   0   0   0   0   0   0   2   0   1]
+ [  0 992   0   1   0   0   1   6   0   0]
+ [  0   1 991   2   1   0   1   2   1   1]
+ [  0  13   0 915  10  16  20  18   5   3]
+ [  1   5   0  13 924  22   5  23   1   6]
+ [  0   0   0   7   6 976   2   2   6   1]
+ [  0   0   0  17   4   2 974   1   0   2]
+ [  0   9   1   4  15   8   0 962   1   0]
+ [  0   2   0   7   3   8   9   0 970   1]
+ [  0   1   0   3   4   4   3   0   0 985]]
+
+```
+
+当使用字符级别embedding时，在测试集上的准确率达到了96.86%，且各类的precision, recall和f1-score都超过了0.9。从混淆矩阵也可以看出分类效果非常优秀。
