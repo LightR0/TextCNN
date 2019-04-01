@@ -1,8 +1,5 @@
 # 项目内容
 本项目主要针对文本分类场景，尝试目前流行的深度学习模型，通过不同的`embedding`方式，对比文本分类效果，实现文本分类的目的。  
-主要embedding：  
-- char 
-- word  
 
 主要模型：
 - Text Classification with CNN
@@ -283,10 +280,68 @@ class TRNNConfig(object):
 
 ![images/rnn_architecture](images/rnn_architecture.png)
 
-### 训练与验证
+### 训练与验证-字符级
 
 > 这部分的代码与 run_cnn.py极为相似，只需要将模型和部分目录稍微修改。
 
-运行 `python run_rnn.py train`，可以开始训练。
+运行 `python run_rnn.py train char`，可以开始训练。
 
 > 若之前进行过训练，请把tensorboard/textrnn删除，避免TensorBoard多次训练结果重叠。
+
+```
+Epoch: 8
+Iter:   2800, Train Loss: 0.0052, Train Acc: 100.00%, Val Loss:   0.34, Val Acc:  91.82%, Time: 0:49:05 
+Iter:   2900, Train Loss:  0.043, Train Acc:  99.22%, Val Loss:   0.39, Val Acc:  91.26%, Time: 0:50:49 
+Iter:   3000, Train Loss:  0.068, Train Acc:  97.66%, Val Loss:   0.33, Val Acc:  91.54%, Time: 0:52:34 
+No optimization for a long time, auto-stopping...
+
+```
+当使用字符级别embedding时，在验证集上的最佳效果为91.54%，经过了8轮迭代停止，速度相比CNN慢很多。
+
+准确率和误差如图所示：
+
+![images](images/acc_loss_char_rnn.png)
+
+
+### 测试-字符级
+
+运行 `python run_rnn.py test char` 在测试集上进行测试。
+
+```
+Test Loss:    0.2, Test Acc:  94.94%
+Precision, Recall and F1-Score...
+             precision    recall  f1-score   support
+
+         体育       0.98      0.98      0.98      1000
+         财经       0.95      0.97      0.96      1000
+         房产       1.00      1.00      1.00      1000
+         家居       0.94      0.87      0.90      1000
+         教育       0.85      0.95      0.90      1000
+         科技       0.93      0.98      0.95      1000
+         时尚       0.92      0.97      0.94      1000
+         时政       0.97      0.90      0.93      1000
+         游戏       0.96      0.95      0.96      1000
+         娱乐       0.99      0.93      0.96      1000
+
+avg / total       0.95      0.95      0.95     10000
+
+Confusion Matrix...
+[[981   0   0   0  12   4   0   0   3   0]
+ [  9 974   0   1   5   1   0   6   3   1]
+ [  0   0 996   3   1   0   0   0   0   0]
+ [  1   4   0 870  63  17  25  13   4   3]
+ [  2  13   1   6 949  13   6   6   3   1]
+ [  0   1   0  10   5 976   0   1   7   0]
+ [  1   0   0  14  10   1 967   0   4   3]
+ [  0  28   0   9  49  14   0 898   1   1]
+ [  2   1   0   3   7   8  29   0 950   0]
+ [  0   3   0   7   9  12  20   2  14 933]]
+
+```
+在测试集上的准确率达到了94.94%，且各类的precision, recall和f1-score，除了家居这一类别，都超过了0.9。
+
+从混淆矩阵可以看出分类效果非常优秀。
+
+对比两个模型，可见RNN除了在家居分类的表现不是很理想，其他几个类别较CNN差别不大。
+
+还可以通过进一步的调节参数，来达到更好的效果。
