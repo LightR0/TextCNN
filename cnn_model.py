@@ -4,6 +4,7 @@ import tensorflow as tf
 import warnings
 warnings.filterwarnings("ignore")
 
+
 class TCNNConfig(object):
     """CNN配置参数"""
 
@@ -11,10 +12,11 @@ class TCNNConfig(object):
     seq_length = 600  # 序列长度
     num_classes = 10  # 类别数
     num_filters = 256  # 卷积核数目
-    kernel_size = 5  # 卷积核尺寸
+    # kernel_sizes = [3, 4, 5]  # 卷积核尺寸
+    kernel_sizes = 5 # 卷积核尺寸
     vocab_size = 5000  # 词汇表达小
 
-    hidden_dim = 128  # 全连接层神经元
+    hidden_dim = 256  # 全连接层神经元
 
     dropout_keep_prob = 0.5  # dropout保留比例
     learning_rate = 1e-3  # 学习率
@@ -51,6 +53,18 @@ class TextCNN(object):
             conv = tf.layers.conv1d(embedding_inputs, self.config.num_filters, self.config.kernel_size, name='conv')
             # global max pooling layer
             gmp = tf.reduce_max(conv, reduction_indices=[1], name='gmp')
+
+        '''
+        for kernel_size in self.config.kernel_sizes:
+            gmps = []
+            with tf.name_scope("cnn-%s" % kernel_size):
+                # CNN layer
+                conv = tf.layers.conv1d(embedding_inputs, self.config.num_filters, kernel_size)
+                # global max pooling layer
+                gmp = tf.reduce_max(conv, reduction_indices=[1])
+                gmps.append(gmp)
+        gmp = tf.concat(values=gmps, name='last_pool_layer', axis=3)
+        '''
 
         with tf.name_scope("score"):
             # 全连接层，后面接dropout以及relu激活
