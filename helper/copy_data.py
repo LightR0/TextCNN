@@ -6,12 +6,12 @@ import random
 import shutil
 
 '''
-从THUCNews随机采样一份子集数据，类别为14个，每个类别数据为10000条。
+从THUCNews随机采样一份子集数据，类别为10个，每个类别数据为6500条。
 其中label_list为需要的类别列表，可以自行减少。data_num为每个类别数据条数，可以自行增加或减少。
 '''
 
-labellist = ["体育", "娱乐", "家居", "彩票", "房产", "教育", "时尚", "时政", "星座", "游戏", "社会", "科技", "股票", "财经"]
-datanum = 10000
+labellist = ["体育", "娱乐", "家居", "教育", "时政", "游戏", "社会", "科技", "股票", "财经"]
+datanum = 6500
 rawdir = "THUCNews"
 newdir = "data/thucnews/"
 
