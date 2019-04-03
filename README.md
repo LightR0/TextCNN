@@ -1,14 +1,8 @@
-# 项目内容
-本项目主要针对文本分类场景，尝试目前流行的深度学习模型，通过不同的`embedding`方式，对比文本分类效果，实现文本分类的目的。  
+# Text Classification with CNN
 
-主要模型：
-- Text Classification with CNN
-- Text Classification with RNN
 # 引用  
 本项目引用借鉴：https://github.com/gaussic/text-classification-cnn-rnn  
-# Text Classification with CNN
-使用基于tensorflow的卷积神经网络进行中文文本分类。  
-
+ 
 ## 环境
 
 | 模块 | 版本 |
@@ -241,160 +235,6 @@ Confusion Matrix...
 
 当使用字符级别embedding时，在测试集上的准确率达到了96.86%，且各类的precision, recall和f1-score都超过了0.9。从混淆矩阵也可以看出分类效果非常优秀。
 
-## RNN循环神经网络
-
-### 配置项
-
-RNN可配置的参数如下所示，在`rnn_model.py`中。
-
-```python
-class TRNNConfig(object):
-    """RNN配置参数"""
-
-    # 模型参数
-    embedding_dim = 64      # 词向量维度
-    seq_length = 600        # 序列长度,600(char),400(word)
-    num_classes = 10        # 类别数
-    vocab_size = 5000       # 词汇表达小,5000(char),3000(word)
-
-    num_layers= 2           # 隐藏层层数
-    hidden_dim = 128        # 隐藏层神经元
-    rnn = 'gru'             # lstm 或 gru
-
-    dropout_keep_prob = 0.8 # dropout保留比例
-    learning_rate = 1e-3    # 学习率
-
-    batch_size = 128         # 每批训练大小
-    num_epochs = 10          # 总迭代轮次
-
-    print_per_batch = 100    # 每多少轮输出一次结果
-    save_per_batch = 10      # 每多少轮存入tensorboard
-```
-
-### RNN模型
-
-具体参看`rnn_model.py`的实现。
-
-大致结构如下：
-
-![images/rnn_architecture](images/rnn_architecture.png)
-
-### 训练与验证-字符级
-
-> 这部分的代码与 run_cnn.py极为相似，只需要将模型和部分目录稍微修改。
-
-运行 `python run_rnn.py train char`，可以开始训练。
-
-> 若之前进行过训练，请把tensorboard/textrnn删除，避免TensorBoard多次训练结果重叠。
-
-```
-Epoch: 8
-Iter:   2800, Train Loss: 0.0052, Train Acc: 100.00%, Val Loss:   0.34, Val Acc:  91.82%, Time: 0:49:05 
-Iter:   2900, Train Loss:  0.043, Train Acc:  99.22%, Val Loss:   0.39, Val Acc:  91.26%, Time: 0:50:49 
-Iter:   3000, Train Loss:  0.068, Train Acc:  97.66%, Val Loss:   0.33, Val Acc:  91.54%, Time: 0:52:34 
-No optimization for a long time, auto-stopping...
-
-```
-当使用字符级别embedding时，在验证集上的最佳效果为91.54%，经过了8轮迭代停止，速度相比CNN慢很多。
-
-准确率和误差如图所示：
-
-![images](images/acc_loss_char_rnn.png)
-
-
-### 测试-字符级
-
-运行 `python run_rnn.py test char` 在测试集上进行测试。
-
-```
-Test Loss:    0.2, Test Acc:  94.94%
-Precision, Recall and F1-Score...
-             precision    recall  f1-score   support
-
-         体育       0.98      0.98      0.98      1000
-         财经       0.95      0.97      0.96      1000
-         房产       1.00      1.00      1.00      1000
-         家居       0.94      0.87      0.90      1000
-         教育       0.85      0.95      0.90      1000
-         科技       0.93      0.98      0.95      1000
-         时尚       0.92      0.97      0.94      1000
-         时政       0.97      0.90      0.93      1000
-         游戏       0.96      0.95      0.96      1000
-         娱乐       0.99      0.93      0.96      1000
-
-avg / total       0.95      0.95      0.95     10000
-
-Confusion Matrix...
-[[981   0   0   0  12   4   0   0   3   0]
- [  9 974   0   1   5   1   0   6   3   1]
- [  0   0 996   3   1   0   0   0   0   0]
- [  1   4   0 870  63  17  25  13   4   3]
- [  2  13   1   6 949  13   6   6   3   1]
- [  0   1   0  10   5 976   0   1   7   0]
- [  1   0   0  14  10   1 967   0   4   3]
- [  0  28   0   9  49  14   0 898   1   1]
- [  2   1   0   3   7   8  29   0 950   0]
- [  0   3   0   7   9  12  20   2  14 933]]
-
-```
-在测试集上的准确率达到了94.94%，且各类的precision, recall和f1-score，除了家居这一类别，都超过了0.9。
-
-### 训练与验证-词语级
-
-运行 `python run_rnn.py train word`，可以开始训练。
-
-> 若之前进行过训练，请把tensorboard/textrnn删除，避免TensorBoard多次训练结果重叠。
-
-```
-Epoch: 10
-Iter:   3600, Train Loss:  0.021, Train Acc:  99.22%, Val Loss:   0.33, Val Acc:  92.94%, Time: 0:42:10 
-Iter:   3700, Train Loss:  0.019, Train Acc:  99.22%, Val Loss:   0.37, Val Acc:  92.30%, Time: 0:43:19 
-No optimization for a long time, auto-stopping...
-
-```
-当使用字符级别embedding时，在验证集上的最佳效果为92.30%，经过了8轮迭代停止，速度相比CNN慢很多。
-
-准确率和误差如图所示：
-
-![images](images/acc_loss_word_rnn.png)
-
-
-### 测试-词语级
-
-运行 `python run_rnn.py test word` 在测试集上进行测试。
-
-```
-Test Loss:   0.17, Test Acc:  95.91%
-Precision, Recall and F1-Score...
-             precision    recall  f1-score   support
-
-         体育       1.00      1.00      1.00      1000
-         财经       0.97      0.99      0.98      1000
-         房产       0.99      0.99      0.99      1000
-         家居       0.93      0.87      0.90      1000
-         教育       0.95      0.93      0.94      1000
-         科技       0.93      0.98      0.95      1000
-         时尚       0.90      0.97      0.93      1000
-         时政       0.97      0.93      0.95      1000
-         游戏       0.98      0.97      0.97      1000
-         娱乐       0.98      0.97      0.97      1000
-
-avg / total       0.96      0.96      0.96     10000
-
-Confusion Matrix...
-[[997   0   0   0   1   0   0   0   1   1]
- [  0 995   0   0   1   0   0   4   0   0]
- [  0   2 987   5   2   0   3   0   0   1]
- [  0  10   2 874  10  22  53  19   6   4]
- [  1   7   0   5 928  22  21   8   3   5]
- [  0   0   0  14   4 976   1   0   3   2]
- [  0   0   0  27   5   0 967   0   0   1]
- [  1  13   3  10  15  20   2 934   1   1]
- [  1   1   0   2  12   7   8   0 967   2]
- [  1   2   0   5   2   2  17   0   5 966]]
-
-```
-在测试集上的准确率达到了95.91%，且各类的precision, recall和f1-score，除了家居这一类别，都超过了0.9。
 
 ## 对比
 
@@ -402,12 +242,9 @@ Confusion Matrix...
 | :---------- | :---------- | :----------- | :---------- | :---------- | :---------- | :---------- |
 | CNN | 600 | 字符级 | 5000 | 1mim   | 95.36% | 96.60% |
 | CNN | 400 | 词语级 | 3000 | 0.5min | 95.32% | 96.86% |
-| RNN | 600 | 字符级 | 5000 | 52mim  | 91.54% | 94.94% |
-| RNN | 400 | 词语级 | 3000 | 43min  | 92.30% | 95.91% |
+
 
 结论：
 - 使用词语级别要比字符级别训练速度快，但是词语级别要事先分词，分词比较耗时
 - 使用词语级别要略好于字符级别，差别不是很大
-- RNN相对CNN简直慢的一批
-- RNN与CNN效果不做对比，因为都没有进行调参
-- 感觉用CNN就已经可以满足一般的场景需求了
+
